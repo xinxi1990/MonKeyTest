@@ -2,6 +2,7 @@ package android.example.xinxi.monkeytest;
 
 import android.content.Context;
 import android.content.Intent;
+import android.os.Bundle;
 import android.os.RemoteException;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.uiautomator.UiDevice;
@@ -43,7 +44,7 @@ public class ExampleInstrumentedTest {
     private int eventHomecount = 0;
     private int eventSubmitcount = 0;
     private int eventXPATHcount = 0;
-    private static long eventWaitTime = 500;
+    private static long eventWaitTime = 200;
     private int TIMING = 2;
 
 
@@ -123,6 +124,11 @@ public class ExampleInstrumentedTest {
     @Before
     public void beforeCase() throws UiObjectNotFoundException, IOException {
         mDevice = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
+
+        Bundle bundle = InstrumentationRegistry.getArguments();
+        TIMING  = Integer.parseInt(bundle.getString("runtime"));
+        Log.i(TAG, String.valueOf(TIMING));
+
         try {
             if(!mDevice.isScreenOn()){
                 mDevice.wakeUp();

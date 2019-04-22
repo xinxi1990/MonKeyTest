@@ -9,15 +9,15 @@ import android.view.Gravity;
 import android.view.View;
 import android.view.animation.BounceInterpolator;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
-
 import com.yhao.floatwindow.FloatWindow;
 import com.yhao.floatwindow.PermissionListener;
 import com.yhao.floatwindow.Screen;
 import com.yhao.floatwindow.ViewStateListener;
-
 import java.io.IOException;
+
 
 public class MainActivity extends AppCompatActivity {
 
@@ -28,15 +28,19 @@ public class MainActivity extends AppCompatActivity {
     private static String TAG = "MonkeyTest";
     private static String packageName = "android.example.xinxi.monkeytest.test";
     private static String runClassName = "android.support.test.runner.AndroidJUnitRunner";
+    public volatile boolean exit = false;
+    public static String runtime = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        uiautomatorThread= new UiautomatorThread();
         startButton = (Button)findViewById(R.id.startbutton);
         stopButton = (Button)findViewById(R.id.stopbutton);
         setFloatWindow();
+
+
+
 
     }
 
@@ -46,23 +50,42 @@ public class MainActivity extends AppCompatActivity {
      *
      *  */
     public void runMyUiautomator(View v){
+        EditText editText1 =(EditText)findViewById(R.id.runTimeText);
+        runtime = editText1.getText().toString();
+        Log.i(TAG, runtime);
         Log.i(TAG, "runMyUiautomator!!!");
+        uiautomatorThread= new UiautomatorThread(runtime);
         uiautomatorThread.start();
-        new CrashThread().start();
     }
 
     /** * 点击按钮对应的方法
      *  @param v
      *  */
     public void stopMyUiautomator(View v){
-        if(! uiautomatorThread.isAlive()){
-            Toast showToast = Toast.makeText(MainActivity.this, "MyUiautomator任务不存在!!!", Toast.LENGTH_SHORT);
+
+        try {
+            uiautomatorThread.pauseThread();
+            Log.i(TAG, "stopMyUiautomator!!!");
+            //uiautomatorThread.interrupt();
+            //uiautomatorThread.join();
+            //Toast showToast = Toast.makeText(MainActivity.this, "停止Monkey任务", Toast.LENGTH_SHORT);
+            //showToast.setGravity(Gravity.CENTER, 0, 0);
+            //showToast.show();
+        }catch (Exception e){
+            Log.e(TAG, e.toString());
+            Toast showToast = Toast.makeText(MainActivity.this, "Monkey任务不存在", Toast.LENGTH_SHORT);
             showToast.setGravity(Gravity.CENTER, 0, 0);
             showToast.show();
-        }else {
-            Log.i(TAG, "stopMyUiautomator!!!");
-            uiautomatorThread.stop();
         }
+
+        //if(! uiautomatorThread.isAlive()){
+        //    Toast showToast = Toast.makeText(MainActivity.this, "MyUiautomator任务不存在!!!", Toast.LENGTH_SHORT);
+        //    showToast.setGravity(Gravity.CENTER, 0, 0);
+        //    showToast.show();
+        //}else {
+        //    Log.i(TAG, "stopMyUiautomator!!!");
+        //    uiautomatorThread.stop();
+        //}
     }
 
     /** * 设置悬浮框
@@ -70,7 +93,7 @@ public class MainActivity extends AppCompatActivity {
      *  */
     public void setFloatWindow(){
         ImageView imageView = new ImageView(getApplicationContext());
-        imageView.setImageResource(R.drawable.icon);
+        imageView.setImageResource(R.drawable.play);
         FloatWindow
                 .with(getApplicationContext())
                 .setView(imageView)
@@ -89,8 +112,18 @@ public class MainActivity extends AppCompatActivity {
         imageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(MainActivity.this, "stopMyUiautomator!!!", Toast.LENGTH_SHORT).show();
-                uiautomatorThread.stop();
+                try {
+                    Log.i(TAG, "stopMyUiautomator!!!");
+                    uiautomatorThread.stop();
+                    Toast showToast = Toast.makeText(MainActivity.this, "停止Monkey任务", Toast.LENGTH_SHORT);
+                    showToast.setGravity(Gravity.CENTER, 0, 0);
+                    showToast.show();
+                }catch (Exception e){
+                    Log.e(TAG, e.toString());
+                    Toast showToast = Toast.makeText(MainActivity.this, "Monkey任务不存在", Toast.LENGTH_SHORT);
+                    showToast.setGravity(Gravity.CENTER, 0, 0);
+                    showToast.show();
+                }
             }
         });
 
@@ -155,6 +188,51 @@ public class MainActivity extends AppCompatActivity {
      *
      * */
     class UiautomatorThread extends Thread {
+
+
+        private final Object lock = new Object();
+        private boolean pause = false;
+        private String runtime;
+
+        public UiautomatorThread(String runtime){
+            this.runtime = runtime;
+
+        }
+
+
+        /**
+         * 调用这个方法实现暂停线程
+         */
+        void pauseThread() {
+            pause = true;
+        }
+
+
+        /**
+         * 调用这个方法实现恢复线程的运行
+         */
+        void resumeThread() {
+            pause = false;
+            synchronized (lock) {
+                lock.notifyAll();
+            }
+        }
+
+
+        /**
+         * 注意：这个方法只能在run方法里调用，不然会阻塞主线程，导致页面无响应
+         */
+        void onPause() {
+            synchronized (lock) {
+                try {
+                    lock.wait();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+
         @Override
         public void run() {
             super.run();
@@ -172,15 +250,16 @@ public class MainActivity extends AppCompatActivity {
          * @return
          */
         public  String generateCommand(String pkgName, String clsName, String mtdName) {
-            String command = "am instrument -w -r -e debug false -e class "
+            String command = "am instrument -w -r -e runtime " + this.runtime +" -e debug false -e class "
                     + pkgName + "." + clsName + "#" + mtdName + " "
                     + pkgName + ".test/android.support.test.runner.AndroidJUnitRunner";
-            Log.e(TAG, command);
+            Log.e(TAG,command);
             return command;
         }
 
 
     }
+
 
     class CrashThread extends Thread {
         @Override
