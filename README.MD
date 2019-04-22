@@ -26,8 +26,6 @@ adb install app-release-unsigned.apk
 
 输入运行时间并点击运行按钮
 
-![image](app.png)
-
 ![image](run.gif)
 
 
