@@ -4,24 +4,42 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical">
     tools:context=".MainActivity">
 
     <!--<TextView-->
-        <!--android:layout_width="wrap_content"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:text="Hello World!"-->
-        <!--app:layout_constraintBottom_toBottomOf="parent"-->
-        <!--app:layout_constraintLeft_toLeftOf="parent"-->
-        <!--app:layout_constraintRight_toRightOf="parent"-->
-        <!--app:layout_constraintTop_toTopOf="parent" />-->
+    <!--android:layout_width="wrap_content"-->
+    <!--android:layout_height="wrap_content"-->
+    <!--android:text="Hello World!"-->
+    <!--app:layout_constraintBottom_toBottomOf="parent"-->
+    <!--app:layout_constraintLeft_toLeftOf="parent"-->
+    <!--app:layout_constraintRight_toRightOf="parent"-->
+    <!--app:layout_constraintTop_toTopOf="parent" />-->
 
-    <Button
-        android:onClick="runMyUiautomator"
-        android:id="@+id/startbutton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="运行"
-        tools:layout_editor_absoluteX="142dp"
-        tools:layout_editor_absoluteY="231dp" />
+
+    <LinearLayout
+        android:layout_width="99dp"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <Button
+            android:id="@+id/startbutton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="runMyUiautomator"
+            android:text="运行"
+            tools:layout_editor_absoluteX="150dp"
+            tools:layout_editor_absoluteY="290dp" />
+        <Button
+            android:id="@+id/stopbutton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="stopMyUiautomator"
+            android:text="停止"
+            tools:layout_editor_absoluteX="150dp"
+            tools:layout_editor_absoluteY="350dp" />
+
+    </LinearLayout>
+
 
 </android.support.constraint.ConstraintLayout>
