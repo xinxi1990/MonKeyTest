@@ -28,4 +28,6 @@ adb install app-release-unsigned.apk
 
 ![image](app.png)
 
+![image](run.gif)
+
 
